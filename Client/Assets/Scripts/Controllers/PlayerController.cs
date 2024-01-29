@@ -5,7 +5,6 @@ using static Define;
 // 플레이어가 입력 한번에 셀 1칸씩 이동하는 컨트롤러
 public class PlayerController : MonoBehaviour
 {
-    public Grid _grid;
     public float _speed = 5.0f;
 
 
@@ -81,7 +80,7 @@ public class PlayerController : MonoBehaviour
     {
         // 초기 위치를 0, 0 으로 설정
         // CellToWorld : 셀 좌표계를 월드 좌표계로 변환
-        Vector3 pos = _grid.CellToWorld(_cellPos) + new Vector3(0.5f, 0.5f);
+        Vector3 pos = Managers.Map.CurrentGrid.CellToWorld(_cellPos) + new Vector3(0.5f, 0.5f);
         transform.position = pos;
 
         // 플레이어에 붙어있는 애니메이터를 가져옴
@@ -93,6 +92,12 @@ public class PlayerController : MonoBehaviour
         GetDirectionInput();
         UpdatePosition();
         UpdateIsMoving();
+    }
+
+    private void LateUpdate()
+    {
+        // 카메라 위치 업데이트 (카메라는 update 이후 호출되는 lateUpdate에서 주로 사용한다)
+        Camera.main.transform.position = new Vector3(transform.position.x, transform.position.y, -10);
     }
 
     // 키보드 입력을 받아 방향 상태를 변경하는 메소드
@@ -126,13 +131,13 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // 클라이언트에서 이동 상태에 맞추어 sprite를 움직이는 함수
+    // 클라이언트에서 이동 상태에 맞추어 sprite를 이동시키는 함수
     void UpdatePosition()
     {
         if (_isMoving == false)
             return;
 
-        Vector3 destPos = _grid.CellToWorld(_cellPos) + new Vector3(0.5f, 0.5f);
+        Vector3 destPos = Managers.Map.CurrentGrid.CellToWorld(_cellPos) + new Vector3(0.5f, 0.5f);
         Vector3 moveDir = destPos - transform.position; // 차 벡터
 
         // 도착 여부 체크
@@ -152,35 +157,37 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // 1칸 씩 움직이도록 이동 타이밍 조정 함수
+    // 1칸 씩 움직이며 이동할 수 있는지 확인하는 함수
     void UpdateIsMoving()
     {
-        if (_isMoving == true)
-            return;
-
-        switch (_dir)
+        if (_isMoving == false && _dir != MoveDir.None)
         {
-            case MoveDir.Up:
-                _cellPos += Vector3Int.up;
-                _isMoving = true;
-                break;
+            Vector3Int destPos = _cellPos; // 앞으로 갈 예정인 좌표
 
-            case MoveDir.Down:
-                _cellPos += Vector3Int.down;
-                _isMoving = true;
-                break;
+            switch (_dir)
+            {
+                case MoveDir.Up:
+                    destPos += Vector3Int.up;
+                    break;
 
-            case MoveDir.Left:
-                _cellPos += Vector3Int.left;
-                _isMoving = true;
-                break;
+                case MoveDir.Down:
+                    destPos += Vector3Int.down;
+                    break;
 
-            case MoveDir.Right:
-                _cellPos += Vector3Int.right;
+                case MoveDir.Left:
+                    destPos += Vector3Int.left;
+                    break;
+
+                case MoveDir.Right:
+                    destPos += Vector3Int.right;
+                    break;
+            }
+
+            if (Managers.Map.CanGo(destPos)) // 가야할 좌표가 이동 가능한지?
+            {
+                _cellPos = destPos;
                 _isMoving = true;
-                break;
+            }
         }
     }
-
-
 }
