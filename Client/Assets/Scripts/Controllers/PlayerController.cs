@@ -10,8 +10,72 @@ public class PlayerController : MonoBehaviour
 
 
     Vector3Int _cellPos = Vector3Int.zero;
-    MoveDir _dir = MoveDir.None;
     bool _isMoving = false;
+
+    MoveDir _dir = MoveDir.Down;
+    Animator _animator;
+    public MoveDir Dir // 방향 인스턴스 (메소드 아님)
+    {
+        get {  return _dir; }
+        set
+        {
+            if (_dir == value) // value는 set으로 들어온 값
+                return;
+
+            switch (value)
+            {
+                case MoveDir.Up:
+                    _animator.Play("WALK_BACK");
+                    transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+                    break;
+
+                case MoveDir.Down:
+                    _animator.Play("WALK_FRONT");
+                    transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+                    break;
+
+                case MoveDir.Left:
+                    _animator.Play("WALK_RIGHT");
+                    transform.localScale = new Vector3(-1.0f, 1.0f, 1.0f);
+                    break;
+
+                case MoveDir.Right:
+                    _animator.Play("WALK_RIGHT");
+                    transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+                    break;
+
+                case MoveDir.None:
+                    if (_dir == MoveDir.Up)
+                    {
+                        _animator.Play("IDLE_BACK");
+                        transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+                    }
+                    else if (_dir == MoveDir.Down)
+                    {
+                        _animator.Play("IDLE_FRONT");
+                        transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+                    }
+                    else if (_dir == MoveDir.Left)
+                    {
+                        _animator.Play("IDLE_RIGHT");
+                        transform.localScale = new Vector3(-1.0f, 1.0f, 1.0f);
+                    }
+                    else if (_dir == MoveDir.Right)
+                    {
+                        _animator.Play("IDLE_RIGHT");
+                        transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+                    }
+                    else
+                    {
+                        _animator.Play("IDLE_RIGHT");
+                        transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+                    }
+                    break;
+            }
+
+            _dir = value;
+        }
+    }
 
     void Start()
     {
@@ -19,6 +83,9 @@ public class PlayerController : MonoBehaviour
         // CellToWorld : 셀 좌표계를 월드 좌표계로 변환
         Vector3 pos = _grid.CellToWorld(_cellPos) + new Vector3(0.5f, 0.5f);
         transform.position = pos;
+
+        // 플레이어에 붙어있는 애니메이터를 가져옴
+        _animator = GetComponent<Animator>();
     }
 
     void Update()
@@ -36,26 +103,26 @@ public class PlayerController : MonoBehaviour
             // deltaTime을 곱해주는 이유는 기기 성능에 따른 프레임 차이에 의해 속도가 달라지는 것을 방지한다.
             // 멀티플레이 게임에서는 입력받는 대로 바로 이동시키는 것은 설계 상 좋지 않다.
             //transform.position += Vector3.up * Time.deltaTime * _speed;
-            _dir = MoveDir.Up;
+            Dir = MoveDir.Up;
         }
         else if (Input.GetKey(KeyCode.S))
         {
             //transform.position += Vector3.down * Time.deltaTime * _speed;
-            _dir = MoveDir.Down;
+            Dir = MoveDir.Down;
         }
         else if (Input.GetKey(KeyCode.A))
         {
             //transform.position += Vector3.left * Time.deltaTime * _speed;
-            _dir = MoveDir.Left;
+            Dir = MoveDir.Left;
         }
         else if (Input.GetKey(KeyCode.D))
         {
             //transform.position += Vector3.right * Time.deltaTime * _speed;
-            _dir = MoveDir.Right;
+            Dir = MoveDir.Right;
         }
         else
         {
-            _dir = MoveDir.None;
+            Dir = MoveDir.None;
         }
     }
 
