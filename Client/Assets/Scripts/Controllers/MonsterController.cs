@@ -1,9 +1,7 @@
-using System;
 using UnityEngine;
 using static Define;
 
-// 플레이어가 입력 한번에 셀 1칸씩 이동하는 컨트롤러
-public class PlayerController : CreatureController
+public class MonsterController : CreatureController
 {
     protected override void Init()
     {
@@ -12,14 +10,8 @@ public class PlayerController : CreatureController
 
     protected override void UpdateController()
     {
-        GetDirectionInput();
+        //GetDirectionInput();
         base.UpdateController();
-    }
-
-    private void LateUpdate()
-    {
-        // 카메라 위치 업데이트 (카메라는 update 이후 호출되는 lateUpdate에서 주로 사용한다)
-        Camera.main.transform.position = new Vector3(transform.position.x, transform.position.y, -10);
     }
 
     // 키보드 입력을 받아 방향 상태를 변경하는 메소드

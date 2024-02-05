@@ -13,6 +13,14 @@ public class Define
         Right,
     }
 
+    public enum CreatureState
+    {
+        Idle,
+        Moving,
+        Skill,
+        Dead,
+    }
+
     public enum Scene
     {
         Unknown,
