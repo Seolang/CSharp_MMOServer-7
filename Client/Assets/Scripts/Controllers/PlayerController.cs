@@ -1,10 +1,13 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using static Define;
 
 // 플레이어가 입력 한번에 셀 1칸씩 이동하는 컨트롤러
 public class PlayerController : CreatureController
 {
+    Coroutine _coSkill;
+
     protected override void Init()
     {
         base.Init();
@@ -12,7 +15,17 @@ public class PlayerController : CreatureController
 
     protected override void UpdateController()
     {
-        GetDirectionInput();
+        switch (State)
+        {
+            case CreatureState.Idle:
+                GetDirectionInput();
+                GetIdleInput();
+                break;
+            case CreatureState.Moving:
+                GetDirectionInput();
+                break;
+
+        }
         base.UpdateController();
     }
 
@@ -22,7 +35,7 @@ public class PlayerController : CreatureController
         Camera.main.transform.position = new Vector3(transform.position.x, transform.position.y, -10);
     }
 
-    // 키보드 입력을 받아 방향 상태를 변경하는 메소드
+    // 키보드 입력을 받아 방향을 변경하는 메소드
     void GetDirectionInput()
     {
         if (Input.GetKey(KeyCode.W))
@@ -51,5 +64,33 @@ public class PlayerController : CreatureController
         {
             Dir = MoveDir.None;
         }
+    }
+
+    // Idle 상태에서의 키 입력을 받는 메소드
+    void GetIdleInput()
+    {
+        if (Input.GetKey(KeyCode.Space))
+        {
+            State = CreatureState.Skill;
+            _coSkill = StartCoroutine("CoStartPunch");
+
+        }
+    }
+
+    // 펀치 스킬 코루틴 메소드
+    IEnumerator CoStartPunch()
+    {
+        // 피격 판정
+        GameObject go = Managers.Object.Find(GetFrontCellPosition());
+        if (go != null)
+        {
+            Debug.Log(go.name);
+        }
+
+
+        // 대기 시간
+        yield return new WaitForSeconds(0.5f);
+        State = CreatureState.Idle;
+        _coSkill = null;
     }
 }

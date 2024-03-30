@@ -7,7 +7,9 @@ public class CreatureController : MonoBehaviour
 {
     public float _speed = 5.0f;
 
-    protected Vector3Int _cellPos = Vector3Int.zero;
+    // protected Vector3Int _cellPos = Vector3Int.zero;
+    public Vector3Int CellPos { get; set; } = Vector3Int.zero;
+
     protected Animator _animator;
     protected SpriteRenderer _sprite;
 
@@ -45,6 +47,31 @@ public class CreatureController : MonoBehaviour
         }
     }
 
+    // 바라보는 방향 바로 앞의 위치를 반환하는 메소드
+    public Vector3Int GetFrontCellPosition()
+    {
+        Vector3Int cellPos = CellPos;
+
+        switch (_lastDir)
+        {
+            case MoveDir.Up:
+                cellPos += Vector3Int.up;
+                break;
+            case MoveDir.Down:
+                cellPos += Vector3Int.down;
+                break;
+            case MoveDir.Left:
+                cellPos += Vector3Int.left;
+                break;
+            case MoveDir.Right:
+                cellPos += Vector3Int.right;
+                break;
+        }
+
+        return cellPos;
+    }
+
+    // 상태에 따라 애니메이션을 조절하는 메소드
     protected virtual void UpdateAnimation()
     {
         if (_state == CreatureState.Idle)
@@ -99,7 +126,28 @@ public class CreatureController : MonoBehaviour
         }
         else if (_state == CreatureState.Skill)
         {
-            //TODO
+            switch (_lastDir)
+            {
+                case MoveDir.Up:
+                    _animator.Play("ATTACK_BACK");
+                    _sprite.flipX = false;
+                    break;
+
+                case MoveDir.Down:
+                    _animator.Play("ATTACK_FRONT");
+                    _sprite.flipX = false;
+                    break;
+
+                case MoveDir.Left:
+                    _animator.Play("ATTACK_RIGHT");
+                    _sprite.flipX = true;
+                    break;
+
+                case MoveDir.Right:
+                    _animator.Play("ATTACK_RIGHT");
+                    _sprite.flipX = false;
+                    break;
+            }
         }
         else
         {
@@ -120,29 +168,76 @@ public class CreatureController : MonoBehaviour
 
     protected virtual void Init()
     {
-        // 초기 위치를 0, 0 으로 설정
-        // CellToWorld : 셀 좌표계를 월드 좌표계로 변환
-        Vector3 pos = Managers.Map.CurrentGrid.CellToWorld(_cellPos) + new Vector3(0.5f, 0.5f);
-        transform.position = pos;
-
         // 개체에 붙어있는 애니메이터를 가져옴
         _animator = GetComponent<Animator>();
         _sprite = GetComponent<SpriteRenderer>();
+
+        // 초기 위치를 0, 0 으로 설정
+        // CellToWorld : 셀 좌표계를 월드 좌표계로 변환
+        Vector3 pos = Managers.Map.CurrentGrid.CellToWorld(CellPos) + new Vector3(0.5f, 0.5f);
+        transform.position = pos;
     }
 
     protected virtual void UpdateController()
     {
-        UpdatePosition();
-        UpdateIsMoving();
+        switch (State) // 상태별로 처리
+        {
+            case CreatureState.Idle:
+                UpdateIdle();
+                break;
+            case CreatureState.Moving:
+                UpdateMoving();
+                break;
+            case CreatureState.Skill:
+                break;
+            case CreatureState.Dead:
+                break;
+        }
     }
 
-    // 클라이언트에서 이동 상태에 맞추어 sprite를 이동시키는 함수
-    void UpdatePosition()
+    // 1칸 씩 움직이며 이동할 수 있는지 확인하는 함수
+    // 이동 가능한 상태일 때, 실제 좌표를 이동한다
+    protected virtual void UpdateIdle()
     {
-        if (State != CreatureState.Moving)
-            return;
+        if (State == CreatureState.Idle && _dir != MoveDir.None)
+        {
+            Vector3Int destPos = CellPos; // 앞으로 갈 예정인 좌표
 
-        Vector3 destPos = Managers.Map.CurrentGrid.CellToWorld(_cellPos) + new Vector3(0.5f, 0.5f);
+            switch (_dir)
+            {
+                case MoveDir.Up:
+                    destPos += Vector3Int.up;
+                    break;
+
+                case MoveDir.Down:
+                    destPos += Vector3Int.down;
+                    break;
+
+                case MoveDir.Left:
+                    destPos += Vector3Int.left;
+                    break;
+
+                case MoveDir.Right:
+                    destPos += Vector3Int.right;
+                    break;
+            }
+
+            State = CreatureState.Moving;
+
+            if (Managers.Map.CanGo(destPos)) // 가야할 좌표가 이동 가능한지?
+            {
+                if (Managers.Object.Find(destPos) == null) // 가야할 좌표에 다른 오브젝트가 없는지?
+                {
+                    CellPos = destPos;
+                }
+            }
+        }
+    }
+
+    // 실제 좌표로 클라이언트의 sprite를 이동시키는 함수
+    protected virtual void UpdateMoving()
+    {
+        Vector3 destPos = Managers.Map.CurrentGrid.CellToWorld(CellPos) + new Vector3(0.5f, 0.5f);
         Vector3 moveDir = destPos - transform.position; // 차 벡터
 
         // 도착 여부 체크
@@ -167,37 +262,13 @@ public class CreatureController : MonoBehaviour
         }
     }
 
-    // 1칸 씩 움직이며 이동할 수 있는지 확인하는 함수
-    void UpdateIsMoving()
+    protected virtual void UpdateSkill()
     {
-        if (State == CreatureState.Idle && _dir != MoveDir.None)
-        {
-            Vector3Int destPos = _cellPos; // 앞으로 갈 예정인 좌표
 
-            switch (_dir)
-            {
-                case MoveDir.Up:
-                    destPos += Vector3Int.up;
-                    break;
+    }
 
-                case MoveDir.Down:
-                    destPos += Vector3Int.down;
-                    break;
+    protected virtual void UpdateDead()
+    {
 
-                case MoveDir.Left:
-                    destPos += Vector3Int.left;
-                    break;
-
-                case MoveDir.Right:
-                    destPos += Vector3Int.right;
-                    break;
-            }
-
-            if (Managers.Map.CanGo(destPos)) // 가야할 좌표가 이동 가능한지?
-            {
-                _cellPos = destPos;
-                State = CreatureState.Moving;
-            }
-        }
     }
 }
