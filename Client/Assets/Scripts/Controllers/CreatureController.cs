@@ -5,16 +5,20 @@ using static UnityEngine.UI.CanvasScaler;
 // 모든 움직이는 개체에 대한 컨트롤러
 public class CreatureController : MonoBehaviour
 {
+    // 속도
     public float _speed = 5.0f;
 
-    // protected Vector3Int _cellPos = Vector3Int.zero;
+    // 위치
     public Vector3Int CellPos { get; set; } = Vector3Int.zero;
 
+    // 애니메이션
     protected Animator _animator;
+
+    // 스프라이트
     protected SpriteRenderer _sprite;
 
-    CreatureState _state = CreatureState.Idle;
-
+    // 상태
+    protected CreatureState _state = CreatureState.Idle;
     public CreatureState State
     {
         get { return _state; }
@@ -28,9 +32,9 @@ public class CreatureController : MonoBehaviour
         }
     }
 
-    MoveDir _lastDir = MoveDir.Down;
-    MoveDir _dir = MoveDir.Down;
-
+    // 이동 방향
+    protected MoveDir _lastDir = MoveDir.Down;
+    protected MoveDir _dir = MoveDir.Down;
     public MoveDir Dir // 방향 인스턴스 (메소드 아님)
     {
         get { return _dir; }
@@ -196,10 +200,10 @@ public class CreatureController : MonoBehaviour
     }
 
     // 1칸 씩 움직이며 이동할 수 있는지 확인하는 함수
-    // 이동 가능한 상태일 때, 실제 좌표를 이동한다
+    // 방향이 존재하고 이동 가능한 상태일 때, 실제 좌표를 이동한다
     protected virtual void UpdateIdle()
     {
-        if (State == CreatureState.Idle && _dir != MoveDir.None)
+        if (_dir != MoveDir.None)
         {
             Vector3Int destPos = CellPos; // 앞으로 갈 예정인 좌표
 
@@ -224,9 +228,10 @@ public class CreatureController : MonoBehaviour
 
             State = CreatureState.Moving;
 
-            if (Managers.Map.CanGo(destPos)) // 가야할 좌표가 이동 가능한지?
+            // 가야할 좌표가 이동 가능하고, 다른 오브젝트가 없는지 체크
+            if (Managers.Map.CanGo(destPos))
             {
-                if (Managers.Object.Find(destPos) == null) // 가야할 좌표에 다른 오브젝트가 없는지?
+                if (Managers.Object.Find(destPos) == null)
                 {
                     CellPos = destPos;
                 }
