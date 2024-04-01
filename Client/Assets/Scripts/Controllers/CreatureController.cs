@@ -19,7 +19,7 @@ public class CreatureController : MonoBehaviour
 
     // 상태
     protected CreatureState _state = CreatureState.Idle;
-    public CreatureState State
+    public virtual CreatureState State
     {
         get { return _state; }
         set
@@ -193,53 +193,21 @@ public class CreatureController : MonoBehaviour
                 UpdateMoving();
                 break;
             case CreatureState.Skill:
+                UpdateSkill();
                 break;
             case CreatureState.Dead:
+                UpdateDead();
                 break;
         }
     }
 
-    // 1칸 씩 움직이며 이동할 수 있는지 확인하는 함수
-    // 방향이 존재하고 이동 가능한 상태일 때, 실제 좌표를 이동한다
+
     protected virtual void UpdateIdle()
     {
-        if (_dir != MoveDir.None)
-        {
-            Vector3Int destPos = CellPos; // 앞으로 갈 예정인 좌표
 
-            switch (_dir)
-            {
-                case MoveDir.Up:
-                    destPos += Vector3Int.up;
-                    break;
-
-                case MoveDir.Down:
-                    destPos += Vector3Int.down;
-                    break;
-
-                case MoveDir.Left:
-                    destPos += Vector3Int.left;
-                    break;
-
-                case MoveDir.Right:
-                    destPos += Vector3Int.right;
-                    break;
-            }
-
-            State = CreatureState.Moving;
-
-            // 가야할 좌표가 이동 가능하고, 다른 오브젝트가 없는지 체크
-            if (Managers.Map.CanGo(destPos))
-            {
-                if (Managers.Object.Find(destPos) == null)
-                {
-                    CellPos = destPos;
-                }
-            }
-        }
     }
 
-    // 실제 좌표로 클라이언트의 sprite를 이동시키는 함수
+
     protected virtual void UpdateMoving()
     {
         Vector3 destPos = Managers.Map.CurrentGrid.CellToWorld(CellPos) + new Vector3(0.5f, 0.5f);
@@ -249,21 +217,59 @@ public class CreatureController : MonoBehaviour
         float dist = moveDir.magnitude; // 벡터 거리
 
         // 도착지까지 거리가 델타시간에 이동 가능한 거리보다 작을 경우 순간이동 시킨 후 도착 알림
+        // 아닌 경우 단위 시간 만큼만 이동
         if (dist < _speed * Time.deltaTime)
         {
             transform.position = destPos;
-
-            // 예외적으로 애니메이션을 직접 컨트롤
-            _state = CreatureState.Idle;
-            if (_dir == MoveDir.None)
-            {
-                UpdateAnimation();
-            }
+            MoveToNextPosition();
         }
         else
         {
             // normalized : 단위벡터
             transform.position += moveDir.normalized * _speed * Time.deltaTime;
+        }
+    }
+
+    protected virtual void MoveToNextPosition()
+    {
+        // 이동 방향이 없으면 종료
+        if (_dir == MoveDir.None)
+        {
+            State = CreatureState.Idle;
+            return;
+        }
+
+        // 1칸 씩 움직이며 이동할 수 있는지 확인
+        // 방향이 존재하고 이동 가능한 상태일 때, 실제 좌표를 이동한다
+        Vector3Int destPos = CellPos; // 목표 좌표
+
+        // 방향에 맞게 목표 좌표를 한칸 이동
+        switch (_dir)
+        {
+            case MoveDir.Up:
+                destPos += Vector3Int.up;
+                break;
+
+            case MoveDir.Down:
+                destPos += Vector3Int.down;
+                break;
+
+            case MoveDir.Left:
+                destPos += Vector3Int.left;
+                break;
+
+            case MoveDir.Right:
+                destPos += Vector3Int.right;
+                break;
+        }
+
+        // 가야할 좌표가 이동 가능하고, 다른 오브젝트가 없는지 체크
+        if (Managers.Map.CanGo(destPos))
+        {
+            if (Managers.Object.Find(destPos) == null)
+            {
+                CellPos = destPos;
+            }
         }
     }
 
