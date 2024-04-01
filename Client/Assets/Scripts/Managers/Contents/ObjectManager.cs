@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -26,6 +27,17 @@ public class ObjectManager
                 continue;
 
             if (cc.CellPos == cellPos) // 해당 게임 오브젝트의 좌표가 찾는 위치라면 객체 반환
+                return obj;
+        }
+
+        return null;
+    }
+
+    public GameObject Find(Func<GameObject, bool> condition)
+    {
+        foreach (GameObject obj in _objects)
+        {
+            if (condition.Invoke(obj))
                 return obj;
         }
 

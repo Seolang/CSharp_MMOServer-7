@@ -6,6 +6,7 @@ using static UnityEngine.UI.CanvasScaler;
 public class CreatureController : MonoBehaviour
 {
     // 속도
+    [SerializeField]
     public float _speed = 5.0f;
 
     // 위치
@@ -18,6 +19,7 @@ public class CreatureController : MonoBehaviour
     protected SpriteRenderer _sprite;
 
     // 상태
+    [SerializeField]
     protected CreatureState _state = CreatureState.Idle;
     public virtual CreatureState State
     {
@@ -34,6 +36,7 @@ public class CreatureController : MonoBehaviour
 
     // 이동 방향
     protected MoveDir _lastDir = MoveDir.Down;
+    [SerializeField]
     protected MoveDir _dir = MoveDir.Down;
     public MoveDir Dir // 방향 인스턴스 (메소드 아님)
     {
