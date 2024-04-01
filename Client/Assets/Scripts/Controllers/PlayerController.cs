@@ -175,6 +175,10 @@ public class PlayerController : CreatureController
         if (go != null)
         {
             Debug.Log(go.name);
+            // 피격 상대의 데미지 메소드 실행
+            CreatureController cc = go.GetComponent<CreatureController>();
+            if (cc != null)
+                cc.OnDamaged();
         }
 
         // 대기 시간
@@ -187,7 +191,7 @@ public class PlayerController : CreatureController
     // 화살 스킬 코루틴 메소드
     IEnumerator CoStartShootArrow()
     {
-        // 피격 판정
+        // 화살 생성
         GameObject go = Managers.Resource.Instantiate("Creature/Arrow");
         ArrowController ac = go.GetComponent<ArrowController>();
         ac.Dir = _lastDir; // 화살이 나아갈 방향 설정
