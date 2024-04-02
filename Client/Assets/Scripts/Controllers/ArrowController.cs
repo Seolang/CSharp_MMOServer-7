@@ -69,7 +69,6 @@ public class ArrowController : CreatureController
             }
             else // 어떤 물체에 부딪힌 경우
             {
-                Debug.Log(go.name);
                 // 화살에 맞은 물체의 데미지 메소드를 실행
                 CreatureController cc = go.GetComponent<CreatureController>();
                 if (cc != null)

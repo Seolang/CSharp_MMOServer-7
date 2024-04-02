@@ -54,6 +54,21 @@ public class CreatureController : MonoBehaviour
         }
     }
 
+    public MoveDir GetDirFromVec(Vector3Int dir)
+    {
+        if (dir.x > 0)
+            return MoveDir.Right;
+        else if (dir.x < 0)
+            return MoveDir.Left;
+        else if (dir.y > 0)
+            return MoveDir.Up;
+        else if (dir.y < 0)
+            return MoveDir.Down;
+        else
+            return MoveDir.None;
+    }
+
+
     // 바라보는 방향 바로 앞의 위치를 반환하는 메소드
     public Vector3Int GetFrontCellPosition()
     {
@@ -219,14 +234,13 @@ public class CreatureController : MonoBehaviour
         // 도착 여부 체크
         float dist = moveDir.magnitude; // 벡터 거리
 
-        // 도착지까지 거리가 델타시간에 이동 가능한 거리보다 작을 경우 순간이동 시킨 후 도착 알림
-        // 아닌 경우 단위 시간 만큼만 이동
+        // 다음 이동 지점 탐색
         if (dist < _speed * Time.deltaTime)
         {
             transform.position = destPos;
             MoveToNextPosition();
         }
-        else
+        else // 스프라이트 이동
         {
             // normalized : 단위벡터
             transform.position += moveDir.normalized * _speed * Time.deltaTime;
@@ -288,6 +302,6 @@ public class CreatureController : MonoBehaviour
 
     public virtual void OnDamaged()
     {
-
+        Debug.Log($"{gameObject.name} hit!");
     }
 }

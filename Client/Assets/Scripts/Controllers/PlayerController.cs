@@ -179,7 +179,6 @@ public class PlayerController : CreatureController
         GameObject go = Managers.Object.Find(GetFrontCellPosition());
         if (go != null)
         {
-            Debug.Log(go.name);
             // 피격 상대의 데미지 메소드 실행
             CreatureController cc = go.GetComponent<CreatureController>();
             if (cc != null)

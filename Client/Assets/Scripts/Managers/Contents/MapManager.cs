@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 public struct Pos
 {
@@ -105,9 +106,9 @@ public class MapManager
     #region A* PathFinding
 
     // U D L R
-    int[] _deltaY = new int[] { 1, -1, 0, 0 };
-    int[] _deltaX = new int[] { 0, 0, -1, 1 };
-    int[] _cost = new int[] { 10, 10, 10, 10 };
+    int[] _deltaY = new int[] { 1, -1, 0, 0};
+    int[] _deltaX = new int[] { 0, 0, -1, 1};
+    int[] _cost = new int[] { 10, 10, 10, 10};
 
     public List<Vector3Int> FindPath(Vector3Int startCellPos, Vector3Int destCellPos, bool ignoreDestCollision = false)
     {
@@ -139,7 +140,7 @@ public class MapManager
         Pos pos = Cell2Pos(startCellPos);
         Pos dest = Cell2Pos(destCellPos);
 
-        // 시작점 발견 (예약 진행)
+        // 시작점 설정 (예약 진행)
         open[pos.Y, pos.X] = 10 * (Math.Abs(dest.Y - pos.Y) + Math.Abs(dest.X - pos.X));
         pq.Push(new PQNode() { F = 10 * (Math.Abs(dest.Y - pos.Y) + Math.Abs(dest.X - pos.X)), G = 0, Y = pos.Y, X = pos.X });
         parent[pos.Y, pos.X] = new Pos(pos.Y, pos.X);
@@ -176,8 +177,8 @@ public class MapManager
                     continue;
 
                 // 비용 계산
-                int g = 0;// node.G + _cost[i];
-                int h = 10 * ((dest.Y - next.Y) * (dest.Y - next.Y) + (dest.X - next.X) * (dest.X - next.X));
+                int g = node.G + _cost[i];
+                int h = 10 * (Math.Abs(dest.Y - pos.Y) + Math.Abs(dest.X - pos.X));
                 // 다른 경로에서 더 빠른 길 이미 찾았으면 스킵
                 if (open[next.Y, next.X] < g + h)
                     continue;
