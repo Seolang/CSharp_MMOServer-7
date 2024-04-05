@@ -13,6 +13,8 @@ public class GameScene : BaseScene
 
         Managers.Map.LoadMap(1); // 1번 맵 로드
 
+        Screen.SetResolution(640, 480, false);
+
         //// 플레이어 생성 후 ObjectManager에 추가
         //GameObject player = Managers.Resource.Instantiate("Creature/Player");
         //player.name = "Player";
