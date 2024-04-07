@@ -5,6 +5,9 @@ using static UnityEngine.UI.CanvasScaler;
 // 모든 움직이는 개체에 대한 컨트롤러
 public class CreatureController : MonoBehaviour
 {
+    // 개체 ID
+    public int Id { get; set; }
+
     // 속도
     [SerializeField]
     public float _speed = 5.0f;
