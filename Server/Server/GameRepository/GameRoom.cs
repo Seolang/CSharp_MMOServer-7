@@ -1,4 +1,6 @@
-﻿using Google.Protobuf.Protocol;
+﻿using Google.Protobuf;
+using Google.Protobuf.Protocol;
+using System;
 using System.Collections.Generic;
 
 namespace Server.GameRepository
@@ -78,6 +80,17 @@ namespace Server.GameRepository
                     }
                 }
             }   
+        }
+
+        public void Broadcast(IMessage packet)
+        {
+            lock (_lock)
+            {
+                foreach (Player p in _players)
+                {
+                    p.Session.Send(packet);
+                }
+            }
         }
     }
 }
