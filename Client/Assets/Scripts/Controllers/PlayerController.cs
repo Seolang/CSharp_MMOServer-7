@@ -1,7 +1,6 @@
-using System;
+using Google.Protobuf.Protocol;
 using System.Collections;
 using UnityEngine;
-using static Define;
 
 // 플레이어가 입력 한번에 셀 1칸씩 이동하는 컨트롤러
 public class PlayerController : CreatureController
@@ -32,7 +31,7 @@ public class PlayerController : CreatureController
     // 상태에 따라 애니메이션을 조절하는 메소드
     protected override void UpdateAnimation()
     {
-        if (_state == CreatureState.Idle)
+        if (State == CreatureState.Idle)
         {
             switch (_lastDir)
             {
@@ -57,9 +56,9 @@ public class PlayerController : CreatureController
                     break;
             }
         }
-        else if (_state == CreatureState.Moving)
+        else if (State == CreatureState.Moving)
         {
-            switch (_dir)
+            switch (Dir)
             {
                 case MoveDir.Up:
                     _animator.Play("WALK_BACK");
@@ -82,7 +81,7 @@ public class PlayerController : CreatureController
                     break;
             }
         }
-        else if (_state == CreatureState.Skill)
+        else if (State == CreatureState.Skill)
         {
             switch (_lastDir)
             {

@@ -1,7 +1,7 @@
+using Google.Protobuf.Protocol;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static Define;
 
 public class MonsterController : CreatureController
 {
@@ -25,10 +25,10 @@ public class MonsterController : CreatureController
 
     public override CreatureState State
     {
-        get { return _state; }
+        get { return base.State; }
         set
         {
-            if (_state == value) return;
+            if (State == value) return;
 
             base.State = value;
 

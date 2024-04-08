@@ -1,6 +1,5 @@
+using Google.Protobuf.Protocol;
 using UnityEngine;
-using static Define;
-using static UnityEngine.UI.CanvasScaler;
 
 // 모든 움직이는 개체에 대한 컨트롤러
 public class CreatureController : MonoBehaviour
@@ -12,8 +11,33 @@ public class CreatureController : MonoBehaviour
     [SerializeField]
     public float _speed = 5.0f;
 
+    PositionInfo _positionInfo = new PositionInfo();
+    public PositionInfo PosInfo
+    {
+        get { return _positionInfo; }
+        set 
+        {
+            if (_positionInfo.Equals(value))
+                return;
+
+            _positionInfo = value;
+            UpdateAnimation();
+        }
+    }
+
     // 위치
-    public Vector3Int CellPos { get; set; } = Vector3Int.zero;
+    public Vector3Int CellPos 
+    {
+        get 
+        {
+            return new Vector3Int(PosInfo.PosX, PosInfo.PosY, 0);
+        }
+        set 
+        {
+            PosInfo.PosX = value.x;
+            PosInfo.PosY = value.y;
+        }
+    }
 
     // 애니메이션
     protected Animator _animator;
@@ -21,35 +45,31 @@ public class CreatureController : MonoBehaviour
     // 스프라이트
     protected SpriteRenderer _sprite;
 
-    // 상태
-    [SerializeField]
-    protected CreatureState _state = CreatureState.Idle;
     public virtual CreatureState State
     {
-        get { return _state; }
+        get { return PosInfo.State; }
         set
         {
-            if (_state == value)
+            if (PosInfo.State == value)
                 return;
 
-            _state = value;
+            PosInfo.State = value;
             UpdateAnimation();
         }
     }
 
     // 이동 방향
     protected MoveDir _lastDir = MoveDir.Down;
-    [SerializeField]
-    protected MoveDir _dir = MoveDir.Down;
+
     public MoveDir Dir // 방향 인스턴스 (메소드 아님)
     {
-        get { return _dir; }
+        get { return PosInfo.MoveDir; }
         set
         {
-            if (_dir == value) // value는 set으로 들어온 값
+            if (PosInfo.MoveDir == value) // value는 set으로 들어온 값
                 return;
 
-            _dir = value; // 마지막에 dir를 갱신하여 갱신 이전 방향에 맞추어 Idle 방향을 정할 수 있음
+            PosInfo.MoveDir = value; // 마지막에 dir를 갱신하여 갱신 이전 방향에 맞추어 Idle 방향을 정할 수 있음
             if (value != MoveDir.None)
                 _lastDir = value;
 
@@ -99,7 +119,7 @@ public class CreatureController : MonoBehaviour
     // 상태에 따라 애니메이션을 조절하는 메소드
     protected virtual void UpdateAnimation()
     {
-        if (_state == CreatureState.Idle)
+        if (State == CreatureState.Idle)
         {
             switch (_lastDir)
             {
@@ -124,9 +144,9 @@ public class CreatureController : MonoBehaviour
                     break;
             }
         }
-        else if (_state == CreatureState.Moving)
+        else if (State == CreatureState.Moving)
         {
-            switch (_dir)
+            switch (Dir)
             {
                 case MoveDir.Up:
                     _animator.Play("WALK_BACK");
@@ -149,7 +169,7 @@ public class CreatureController : MonoBehaviour
                     break;
             }
         }
-        else if (_state == CreatureState.Skill)
+        else if (State == CreatureState.Skill)
         {
             switch (_lastDir)
             {
@@ -253,7 +273,7 @@ public class CreatureController : MonoBehaviour
     protected virtual void MoveToNextPosition()
     {
         // 이동 방향이 없으면 종료
-        if (_dir == MoveDir.None)
+        if (Dir == MoveDir.None)
         {
             State = CreatureState.Idle;
             return;
@@ -264,7 +284,7 @@ public class CreatureController : MonoBehaviour
         Vector3Int destPos = CellPos; // 목표 좌표
 
         // 방향에 맞게 목표 좌표를 한칸 이동
-        switch (_dir)
+        switch (Dir)
         {
             case MoveDir.Up:
                 destPos += Vector3Int.up;

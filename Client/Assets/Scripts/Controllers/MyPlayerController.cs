@@ -1,7 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
+using Google.Protobuf.Protocol;
 using UnityEngine;
-using static Define;
 
 public class MyPlayerController : PlayerController
 {
@@ -82,6 +80,21 @@ public class MyPlayerController : PlayerController
         {
             State = CreatureState.Skill;
             _coSkill = StartCoroutine("CoStartShootArrow");
+        }
+    }
+
+    protected override void MoveToNextPosition()
+    {
+        CreatureState prevState = State;
+        Vector3Int prevCellPos = CellPos;
+
+        base.MoveToNextPosition();
+
+        if (prevState != State || prevCellPos != CellPos)
+        {
+            C_Move movePacket = new C_Move();
+            movePacket.PosInfo = PosInfo;
+            Managers.Network.Send(movePacket);
         }
     }
 }
