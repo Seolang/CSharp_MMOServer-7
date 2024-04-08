@@ -40,6 +40,7 @@ namespace Server
             MyPlayer.Info.PosInfo.MoveDir = MoveDir.None;
             MyPlayer.Info.PosInfo.PosX = 0;
             MyPlayer.Info.PosInfo.PosY = 0;
+
             MyPlayer.Session = this;
 
 			RoomManager.Instance.Find(1).EnterGame(MyPlayer);

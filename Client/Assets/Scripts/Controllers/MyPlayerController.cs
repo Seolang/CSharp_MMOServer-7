@@ -85,16 +85,59 @@ public class MyPlayerController : PlayerController
 
     protected override void MoveToNextPosition()
     {
-        CreatureState prevState = State;
-        Vector3Int prevCellPos = CellPos;
+        // 이동 방향이 없으면 종료
+        if (Dir == MoveDir.None)
+        {
+            State = CreatureState.Idle;
+            CheckUpdatedFlag();
+            return;
+        }
 
-        base.MoveToNextPosition();
+        // 1칸 씩 움직이며 이동할 수 있는지 확인
+        // 방향이 존재하고 이동 가능한 상태일 때, 실제 좌표를 이동한다
+        Vector3Int destPos = CellPos; // 목표 좌표
 
-        if (prevState != State || prevCellPos != CellPos)
+        // 방향에 맞게 목표 좌표를 한칸 이동
+        switch (Dir)
+        {
+            case MoveDir.Up:
+                destPos += Vector3Int.up;
+                break;
+
+            case MoveDir.Down:
+                destPos += Vector3Int.down;
+                break;
+
+            case MoveDir.Left:
+                destPos += Vector3Int.left;
+                break;
+
+            case MoveDir.Right:
+                destPos += Vector3Int.right;
+                break;
+        }
+
+        // 가야할 좌표가 이동 가능하고, 다른 오브젝트가 없는지 체크
+        if (Managers.Map.CanGo(destPos))
+        {
+            if (Managers.Object.Find(destPos) == null)
+            {
+                CellPos = destPos;
+            }
+        }
+
+        CheckUpdatedFlag();
+    }
+
+    // 방향, 위치, 상태가 변하면 패킷 전송
+    void CheckUpdatedFlag()
+    {
+        if (_updated)
         {
             C_Move movePacket = new C_Move();
             movePacket.PosInfo = PosInfo;
             Managers.Network.Send(movePacket);
+            _updated = false;
         }
     }
 }

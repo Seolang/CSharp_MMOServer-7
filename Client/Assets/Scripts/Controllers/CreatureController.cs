@@ -11,6 +11,8 @@ public class CreatureController : MonoBehaviour
     [SerializeField]
     public float _speed = 5.0f;
 
+    protected bool _updated = false;
+
     PositionInfo _positionInfo = new PositionInfo();
     public PositionInfo PosInfo
     {
@@ -20,8 +22,9 @@ public class CreatureController : MonoBehaviour
             if (_positionInfo.Equals(value))
                 return;
 
-            _positionInfo = value;
-            UpdateAnimation();
+            CellPos = new Vector3Int(value.PosX, value.PosY, 0);
+            State = value.State;
+            Dir = value.MoveDir;
         }
     }
 
@@ -34,8 +37,12 @@ public class CreatureController : MonoBehaviour
         }
         set 
         {
+            if (PosInfo.PosX == value.x && PosInfo.PosY == value.y)
+                return;
+
             PosInfo.PosX = value.x;
             PosInfo.PosY = value.y;
+            _updated = true;
         }
     }
 
@@ -54,6 +61,7 @@ public class CreatureController : MonoBehaviour
                 return;
 
             PosInfo.State = value;
+            _updated = true;
             UpdateAnimation();
         }
     }
@@ -73,6 +81,7 @@ public class CreatureController : MonoBehaviour
             if (value != MoveDir.None)
                 _lastDir = value;
 
+            _updated = true;
             UpdateAnimation();
         }
     }
@@ -203,7 +212,6 @@ public class CreatureController : MonoBehaviour
     void Start()
     {
         Init();
-
     }
 
     void Update()
@@ -221,6 +229,11 @@ public class CreatureController : MonoBehaviour
         // CellToWorld : 셀 좌표계를 월드 좌표계로 변환
         Vector3 pos = Managers.Map.CurrentGrid.CellToWorld(CellPos) + new Vector3(0.5f, 0.5f);
         transform.position = pos;
+
+        State = CreatureState.Idle;
+        Dir = MoveDir.None;
+        CellPos = new Vector3Int(0, 0, 0);
+        UpdateAnimation();
     }
 
     protected virtual void UpdateController()
@@ -272,45 +285,7 @@ public class CreatureController : MonoBehaviour
 
     protected virtual void MoveToNextPosition()
     {
-        // 이동 방향이 없으면 종료
-        if (Dir == MoveDir.None)
-        {
-            State = CreatureState.Idle;
-            return;
-        }
 
-        // 1칸 씩 움직이며 이동할 수 있는지 확인
-        // 방향이 존재하고 이동 가능한 상태일 때, 실제 좌표를 이동한다
-        Vector3Int destPos = CellPos; // 목표 좌표
-
-        // 방향에 맞게 목표 좌표를 한칸 이동
-        switch (Dir)
-        {
-            case MoveDir.Up:
-                destPos += Vector3Int.up;
-                break;
-
-            case MoveDir.Down:
-                destPos += Vector3Int.down;
-                break;
-
-            case MoveDir.Left:
-                destPos += Vector3Int.left;
-                break;
-
-            case MoveDir.Right:
-                destPos += Vector3Int.right;
-                break;
-        }
-
-        // 가야할 좌표가 이동 가능하고, 다른 오브젝트가 없는지 체크
-        if (Managers.Map.CanGo(destPos))
-        {
-            if (Managers.Object.Find(destPos) == null)
-            {
-                CellPos = destPos;
-            }
-        }
     }
 
     protected virtual void UpdateSkill()
