@@ -28,6 +28,13 @@ public class CreatureController : MonoBehaviour
         }
     }
 
+    // 위치와 스프라이트 동기화
+    public void SyncPos()
+    {
+        Vector3 destPos = Managers.Map.CurrentGrid.CellToWorld(CellPos) + new Vector3(0.5f, 0.5f);
+        transform.position = destPos;
+    }
+
     // 위치
     public Vector3Int CellPos 
     {
@@ -232,7 +239,6 @@ public class CreatureController : MonoBehaviour
 
         State = CreatureState.Idle;
         Dir = MoveDir.None;
-        CellPos = new Vector3Int(0, 0, 0);
         UpdateAnimation();
     }
 

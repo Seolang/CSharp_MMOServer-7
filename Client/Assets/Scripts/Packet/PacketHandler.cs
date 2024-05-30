@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.Protocol;
 using ServerCore;
+using System;
 using UnityEngine;
 
 class PacketHandler
@@ -52,5 +53,20 @@ class PacketHandler
             return;
 
         cc.PosInfo = movePacket.PosInfo;
+    }
+
+    public static void S_SkillHandler(PacketSession session, IMessage packet)
+    {
+        S_Skill skillPacket = packet as S_Skill;
+
+        GameObject go = Managers.Object.FindById(skillPacket.PlayerId);
+        if (go == null)
+            return;
+
+        PlayerController pc = go.GetComponent<PlayerController>();
+        if (pc != null)
+        {
+            pc.UseSkill(skillPacket.Info.SkillId);
+        }
     }
 }

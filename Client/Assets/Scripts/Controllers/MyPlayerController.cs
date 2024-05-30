@@ -1,4 +1,5 @@
 using Google.Protobuf.Protocol;
+using System.Collections;
 using UnityEngine;
 
 public class MyPlayerController : PlayerController
@@ -70,17 +71,36 @@ public class MyPlayerController : PlayerController
             return;
         }
 
-        if (Input.GetKey(KeyCode.Space))
+        // 스킬 버튼 입력 시
+        if (_coSkillCooltime == null && Input.GetKey(KeyCode.Space))
         {
-            State = CreatureState.Skill;
-            _coSkill = StartCoroutine("CoStartPunch");
+            Debug.Log("Skill Punch!");
 
+            C_Skill skill = new C_Skill() { Info = new SkillInfo() };
+            skill.Info.SkillId = 1;
+            Managers.Network.Send(skill);
+
+            _coSkillCooltime = StartCoroutine("CoInputCooltime", 0.2f);
         }
-        else if (Input.GetKey(KeyCode.LeftShift))
+        else if (_coSkillCooltime == null && Input.GetKey(KeyCode.LeftShift))
         {
-            State = CreatureState.Skill;
-            _coSkill = StartCoroutine("CoStartShootArrow");
+            Debug.Log("Skill Arrow!");
+
+            C_Skill skill = new C_Skill() { Info = new SkillInfo() };
+            skill.Info.SkillId = 2;
+            Managers.Network.Send(skill);
+
+            _coSkillCooltime = StartCoroutine("CoInputCooltime", 0.5f);
         }
+    }
+
+
+    Coroutine _coSkillCooltime;
+
+    IEnumerator CoInputCooltime(float time)
+    {
+        yield return new WaitForSeconds(time);
+        _coSkillCooltime = null;
     }
 
     protected override void MoveToNextPosition()
@@ -130,7 +150,7 @@ public class MyPlayerController : PlayerController
     }
 
     // 방향, 위치, 상태가 변하면 패킷 전송
-    void CheckUpdatedFlag()
+    protected override void CheckUpdatedFlag()
     {
         if (_updated)
         {
