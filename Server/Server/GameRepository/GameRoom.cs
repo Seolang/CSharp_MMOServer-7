@@ -10,7 +10,14 @@ namespace Server.GameRepository
         object _lock = new object();
         public int RoomId { get; set; }
 
-        List<Player> _players = new List<Player>();
+        Dictionary<int, Player> _players = new Dictionary<int, Player>();
+
+        Map _map = new Map();
+
+        public void Init(int mapId)
+        {
+            _map.LoadMap(mapId);
+        }
 
         public void EnterGame(Player newPlayer)
         {
@@ -19,7 +26,7 @@ namespace Server.GameRepository
 
             lock (_lock)
             {
-                _players.Add(newPlayer);
+                _players.Add(newPlayer.Info.PlayerId, newPlayer);
                 newPlayer.Room = this;
 
                 // 본인한테 정보 전송
@@ -31,7 +38,7 @@ namespace Server.GameRepository
 
                     // 현재 방에 접속한 인원들의 정보를 전달
                     S_Spawn spawnPacket = new S_Spawn();
-                    foreach (Player player in _players)
+                    foreach (Player player in _players.Values)
                     {
                         if (player != newPlayer)
                             spawnPacket.Players.Add(player.Info);
@@ -43,7 +50,7 @@ namespace Server.GameRepository
                 {
                     S_Spawn spawnPacket = new S_Spawn();
                     spawnPacket.Players.Add(newPlayer.Info);
-                    foreach(Player player in _players)
+                    foreach(Player player in _players.Values)
                     {
                         if (player != newPlayer)
                             player.Session.Send(spawnPacket);
@@ -56,11 +63,10 @@ namespace Server.GameRepository
         {
             lock ( _lock)
             {
-                Player player = _players.Find(player => player.Info.PlayerId == playerId);
-                if (player == null)
+                Player player = null;
+                if (_players.Remove(playerId, out player) == false)
                     return;
 
-                _players.Remove(player);
                 player.Room = null;
 
                 // 본인한테 정보 전송
@@ -73,7 +79,7 @@ namespace Server.GameRepository
                 {
                     S_Despawn despawnPacket = new S_Despawn();
                     despawnPacket.PlayerIds.Add(player.Info.PlayerId);
-                    foreach(Player p in _players)
+                    foreach(Player p in _players.Values)
                     {
                         if (p != player)
                             p.Session.Send(despawnPacket);
@@ -92,8 +98,19 @@ namespace Server.GameRepository
                 // TODO: 정상 패킷인지 검증
 
                 // 서버에서 좌표 이동
+                PositionInfo movePosInfo = movePacket.PosInfo;
                 PlayerInfo info = player.Info;
-                info.PosInfo = movePacket.PosInfo;
+
+                // 다른 좌표로 이동 할 경우, 갈 수 있는지 체크
+                if (movePosInfo.PosX != info.PosInfo.PosX || movePosInfo.PosY != info.PosInfo.PosY)
+                {
+                    if (_map.CanGo(new Vector2Int(movePosInfo.PosX, movePosInfo.PosY)) == false)
+                        return;
+                }
+
+                info.PosInfo.State = movePosInfo.State;
+                info.PosInfo.MoveDir = movePosInfo.MoveDir;
+                _map.ApplyMove(player, new Vector2Int(movePosInfo.PosX, movePosInfo.PosY));
 
                 // 다른 플레이어한테도 알려준다
                 S_Move resMovePacket = new S_Move();
@@ -116,7 +133,6 @@ namespace Server.GameRepository
                     return;
 
                 // TODO : 스킬 사용 가능 여부 체크
-
                 // 통과
                 info.PosInfo.State = CreatureState.Skill;
 
@@ -126,6 +142,13 @@ namespace Server.GameRepository
                 Broadcast(skill);
 
                 // TODO : 데미지 판정
+                Vector2Int skillPos = player.GetFrontCellPosition(info.PosInfo.MoveDir);
+                Player target = _map.Find(skillPos);
+                if (target != null)
+                {
+                    Console.WriteLine("Hit Player!");
+                }
+
             }
         }
 
@@ -133,11 +156,13 @@ namespace Server.GameRepository
         {
             lock (_lock)
             {
-                foreach (Player p in _players)
+                foreach (Player p in _players.Values)
                 {
                     p.Session.Send(packet);
                 }
             }
         }
+
+
     }
 }

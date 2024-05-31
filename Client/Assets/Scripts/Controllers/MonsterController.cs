@@ -50,7 +50,7 @@ public class MonsterController : CreatureController
     {
         base.Init();
         State = CreatureState.Idle;
-        Dir = MoveDir.None;
+        Dir = MoveDir.Down;
         _speed = 3.0f;
         _rangedSkill = (Random.Range(0, 2) == 0 ? true : false);
         if (_rangedSkill)
@@ -207,7 +207,7 @@ public class MonsterController : CreatureController
         // 화살 생성
         GameObject go = Managers.Resource.Instantiate("Creature/Arrow");
         ArrowController ac = go.GetComponent<ArrowController>();
-        ac.Dir = _lastDir; // 화살이 나아갈 방향 설정
+        ac.Dir = Dir; // 화살이 나아갈 방향 설정
         ac.CellPos = CellPos; // 화살 초기 위치 설정
 
         // 대기 시간

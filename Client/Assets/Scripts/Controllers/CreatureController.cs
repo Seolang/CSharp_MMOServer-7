@@ -73,9 +73,6 @@ public class CreatureController : MonoBehaviour
         }
     }
 
-    // 이동 방향
-    protected MoveDir _lastDir = MoveDir.Down;
-
     public MoveDir Dir // 방향 인스턴스 (메소드 아님)
     {
         get { return PosInfo.MoveDir; }
@@ -85,11 +82,9 @@ public class CreatureController : MonoBehaviour
                 return;
 
             PosInfo.MoveDir = value; // 마지막에 dir를 갱신하여 갱신 이전 방향에 맞추어 Idle 방향을 정할 수 있음
-            if (value != MoveDir.None)
-                _lastDir = value;
 
-            _updated = true;
             UpdateAnimation();
+            _updated = true;
         }
     }
 
@@ -101,10 +96,8 @@ public class CreatureController : MonoBehaviour
             return MoveDir.Left;
         else if (dir.y > 0)
             return MoveDir.Up;
-        else if (dir.y < 0)
-            return MoveDir.Down;
         else
-            return MoveDir.None;
+            return MoveDir.Down;
     }
 
 
@@ -113,7 +106,7 @@ public class CreatureController : MonoBehaviour
     {
         Vector3Int cellPos = CellPos;
 
-        switch (_lastDir)
+        switch (Dir)
         {
             case MoveDir.Up:
                 cellPos += Vector3Int.up;
@@ -137,7 +130,7 @@ public class CreatureController : MonoBehaviour
     {
         if (State == CreatureState.Idle)
         {
-            switch (_lastDir)
+            switch (Dir)
             {
                 case MoveDir.Up:
                     _animator.Play("IDLE_BACK");
@@ -187,7 +180,7 @@ public class CreatureController : MonoBehaviour
         }
         else if (State == CreatureState.Skill)
         {
-            switch (_lastDir)
+            switch (Dir)
             {
                 case MoveDir.Up:
                     _animator.Play("ATTACK_BACK");
@@ -238,7 +231,7 @@ public class CreatureController : MonoBehaviour
         transform.position = pos;
 
         State = CreatureState.Idle;
-        Dir = MoveDir.None;
+        Dir = MoveDir.Down;
         UpdateAnimation();
     }
 

@@ -15,7 +15,7 @@ class PacketHandler
 		C_Move movePacket = packet as C_Move;
 		ClientSession clientSession = session as ClientSession;
 
-        Console.WriteLine($"C_Move ({movePacket.PosInfo.PosX}, {movePacket.PosInfo.PosY})");
+        Console.WriteLine($"C_Move : {clientSession.SessionId} -> ({movePacket.PosInfo.PosX}, {movePacket.PosInfo.PosY})");
 
 		// 멀티스레드에서의 널 안정성을 위해 공유 객체를 로컬 객체로 복사
 		Player player = clientSession.MyPlayer;
@@ -33,6 +33,9 @@ class PacketHandler
     {
         C_Skill skillPacket = packet as C_Skill;
         ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"C_Skill : {clientSession.SessionId} -> SKILL_{skillPacket.Info.SkillId}");
+
 
         Player player = clientSession.MyPlayer;
         if (player == null)

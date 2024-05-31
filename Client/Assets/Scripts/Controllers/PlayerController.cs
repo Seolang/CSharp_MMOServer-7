@@ -18,22 +18,15 @@ public class PlayerController : CreatureController
         base.UpdateController();
     }
 
-    protected override void UpdateIdle()
-    {
-        // 이동 상태로 갈지 확인
-        if (Dir != MoveDir.None)
-        {
-            State = CreatureState.Moving;
-            return;
-        }
-    }
-
     // 상태에 따라 애니메이션을 조절하는 메소드
     protected override void UpdateAnimation()
     {
+        if (_animator == null || _sprite == null) 
+            return;
+
         if (State == CreatureState.Idle)
         {
-            switch (_lastDir)
+            switch (Dir)
             {
                 case MoveDir.Up:
                     _animator.Play("IDLE_BACK");
@@ -83,7 +76,7 @@ public class PlayerController : CreatureController
         }
         else if (State == CreatureState.Skill)
         {
-            switch (_lastDir)
+            switch (Dir)
             {
                 case MoveDir.Up:
                     _animator.Play(_rangeSkill ? "ATTACK_WEAPON_BACK" : "ATTACK_BACK");
@@ -151,7 +144,7 @@ public class PlayerController : CreatureController
         // 화살 생성
         GameObject go = Managers.Resource.Instantiate("Creature/Arrow");
         ArrowController ac = go.GetComponent<ArrowController>();
-        ac.Dir = _lastDir; // 화살이 나아갈 방향 설정
+        ac.Dir = Dir; // 화살이 나아갈 방향 설정
         ac.CellPos = CellPos; // 화살 초기 위치 설정
 
         // 대기 시간

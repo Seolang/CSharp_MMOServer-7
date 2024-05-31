@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class MyPlayerController : PlayerController
 {
+    bool _moveKeyPressed = false;
+
     protected override void Init()
     {
         base.Init();
@@ -34,6 +36,8 @@ public class MyPlayerController : PlayerController
     // 키보드 입력을 받아 방향을 변경하는 메소드
     void GetDirectionInput()
     {
+        _moveKeyPressed = true;
+
         if (Input.GetKey(KeyCode.W))
         {
             // deltaTime을 곱해주는 이유는 기기 성능에 따른 프레임 차이에 의해 속도가 달라지는 것을 방지한다.
@@ -58,14 +62,15 @@ public class MyPlayerController : PlayerController
         }
         else
         {
-            Dir = MoveDir.None;
+            _moveKeyPressed = false;
         }
+
     }
 
     protected override void UpdateIdle()
     {
         // 이동 상태로 갈지 확인
-        if (Dir != MoveDir.None)
+        if (_moveKeyPressed)
         {
             State = CreatureState.Moving;
             return;
@@ -106,7 +111,7 @@ public class MyPlayerController : PlayerController
     protected override void MoveToNextPosition()
     {
         // 이동 방향이 없으면 종료
-        if (Dir == MoveDir.None)
+        if (_moveKeyPressed == false)
         {
             State = CreatureState.Idle;
             CheckUpdatedFlag();
