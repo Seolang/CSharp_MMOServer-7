@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Server.GameRepository
+namespace Server.GameRepository.Room
 {
     public class RoomManager
     {
         public static RoomManager Instance { get; } = new RoomManager();
-        
+
         object _lock = new object();
         Dictionary<int, GameRoom> _rooms = new Dictionary<int, GameRoom>();
         int _roomId = 1;
@@ -37,7 +37,7 @@ namespace Server.GameRepository
 
         public GameRoom Find(int roomId)
         {
-            lock ( _lock)
+            lock (_lock)
             {
                 GameRoom room = null;
                 if (_rooms.TryGetValue(roomId, out room))

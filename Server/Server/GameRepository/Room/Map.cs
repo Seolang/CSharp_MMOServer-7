@@ -1,11 +1,12 @@
 ﻿using Google.Protobuf.Protocol;
+using Server.GameRepository.Object;
 using ServerCore;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Server.GameRepository
+namespace Server.GameRepository.Room
 {
     public struct Pos
     {
@@ -41,7 +42,7 @@ namespace Server.GameRepository
         public static Vector2Int left { get { return new Vector2Int(-1, 0); } }
         public static Vector2Int right { get { return new Vector2Int(1, 0); } }
 
-        public static Vector2Int operator+(Vector2Int a, Vector2Int b)
+        public static Vector2Int operator +(Vector2Int a, Vector2Int b)
         {
             return new Vector2Int(a.x + b.x, a.y + b.y);
         }
@@ -123,7 +124,7 @@ namespace Server.GameRepository
             // mapId에 해당하는 맵을 가져옴
             string mapName = "Map_" + mapId.ToString("000"); // 00x 포맷 지정
 
-            
+
             // Collision 관련 파일
             string text = File.ReadAllText($"{pathPrefix}/{mapName}.txt");
             StringReader reader = new StringReader(text);
@@ -143,7 +144,7 @@ namespace Server.GameRepository
                 string line = reader.ReadLine();
                 for (int x = 0; x < xCount; x++)
                 {
-                    _collision[y, x] = (line[x] == '1' ? true : false);
+                    _collision[y, x] = line[x] == '1' ? true : false;
                 }
             }
         }
@@ -174,7 +175,7 @@ namespace Server.GameRepository
             int[,] open = new int[SizeY, SizeX]; // OpenList
             for (int y = 0; y < SizeY; y++)
                 for (int x = 0; x < SizeX; x++)
-                    open[y, x] = Int32.MaxValue;
+                    open[y, x] = int.MaxValue;
 
             Pos[,] parent = new Pos[SizeY, SizeX];
 

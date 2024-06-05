@@ -1,7 +1,8 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.Protocol;
 using Server;
-using Server.GameRepository;
+using Server.GameRepository.Object;
+using Server.GameRepository.Room;
 using ServerCore;
 using System;
 using System.Collections.Generic;

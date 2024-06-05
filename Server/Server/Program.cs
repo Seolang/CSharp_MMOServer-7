@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 using Google.Protobuf;
 using Google.Protobuf.Protocol;
 using Google.Protobuf.WellKnownTypes;
-using Server.GameRepository;
+using Server.GameRepository.Room;
 using ServerCore;
 
 namespace Server
 {
-	class Program
+    class Program
 	{
 		static Listener _listener = new Listener();
 

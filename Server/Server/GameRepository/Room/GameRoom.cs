@@ -1,9 +1,10 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.Protocol;
+using Server.GameRepository.Object;
 using System;
 using System.Collections.Generic;
 
-namespace Server.GameRepository
+namespace Server.GameRepository.Room
 {
     public class GameRoom
     {
@@ -21,12 +22,12 @@ namespace Server.GameRepository
 
         public void EnterGame(Player newPlayer)
         {
-            if (newPlayer == null) 
+            if (newPlayer == null)
                 return;
 
             lock (_lock)
             {
-                _players.Add(newPlayer.Info.PlayerId, newPlayer);
+                _players.Add(newPlayer.Info.ObjectId, newPlayer);
                 newPlayer.Room = this;
 
                 // 본인한테 정보 전송
@@ -41,7 +42,7 @@ namespace Server.GameRepository
                     foreach (Player player in _players.Values)
                     {
                         if (player != newPlayer)
-                            spawnPacket.Players.Add(player.Info);
+                            spawnPacket.Objects.Add(player.Info);
                     }
                     newPlayer.Session.Send(spawnPacket);
                 }
@@ -49,8 +50,8 @@ namespace Server.GameRepository
                 // 타인한테 정보 전송
                 {
                     S_Spawn spawnPacket = new S_Spawn();
-                    spawnPacket.Players.Add(newPlayer.Info);
-                    foreach(Player player in _players.Values)
+                    spawnPacket.Objects.Add(newPlayer.Info);
+                    foreach (Player player in _players.Values)
                     {
                         if (player != newPlayer)
                             player.Session.Send(spawnPacket);
@@ -61,7 +62,7 @@ namespace Server.GameRepository
 
         public void LeaveGame(int playerId)
         {
-            lock ( _lock)
+            lock (_lock)
             {
                 Player player = null;
                 if (_players.Remove(playerId, out player) == false)
@@ -78,19 +79,19 @@ namespace Server.GameRepository
                 // 타인에게 정보 전송
                 {
                     S_Despawn despawnPacket = new S_Despawn();
-                    despawnPacket.PlayerIds.Add(player.Info.PlayerId);
-                    foreach(Player p in _players.Values)
+                    despawnPacket.PlayerIds.Add(player.Info.ObjectId);
+                    foreach (Player p in _players.Values)
                     {
                         if (p != player)
                             p.Session.Send(despawnPacket);
                     }
                 }
-            }   
+            }
         }
 
         public void HandleMove(Player player, C_Move movePacket)
         {
-            if (player == null) 
+            if (player == null)
                 return;
 
             lock (_lock)
@@ -99,7 +100,7 @@ namespace Server.GameRepository
 
                 // 서버에서 좌표 이동
                 PositionInfo movePosInfo = movePacket.PosInfo;
-                PlayerInfo info = player.Info;
+                ObjectInfo info = player.Info;
 
                 // 다른 좌표로 이동 할 경우, 갈 수 있는지 체크
                 if (movePosInfo.PosX != info.PosInfo.PosX || movePosInfo.PosY != info.PosInfo.PosY)
@@ -114,7 +115,7 @@ namespace Server.GameRepository
 
                 // 다른 플레이어한테도 알려준다
                 S_Move resMovePacket = new S_Move();
-                resMovePacket.PlayerId = player.Info.PlayerId;
+                resMovePacket.PlayerId = player.Info.ObjectId;
                 resMovePacket.PosInfo = movePacket.PosInfo;
 
                 Broadcast(resMovePacket);
@@ -128,27 +129,31 @@ namespace Server.GameRepository
 
             lock (_lock)
             {
-                PlayerInfo info = player.Info;
+                ObjectInfo info = player.Info;
                 if (info.PosInfo.State != CreatureState.Idle)
                     return;
 
                 // TODO : 스킬 사용 가능 여부 체크
-                // 통과
                 info.PosInfo.State = CreatureState.Skill;
-
                 S_Skill skill = new S_Skill() { Info = new SkillInfo() };
-                skill.PlayerId = info.PlayerId;
-                skill.Info.SkillId = 1;
+                skill.PlayerId = info.ObjectId;
+                skill.Info.SkillId = skillPacket.Info.SkillId;
                 Broadcast(skill);
 
-                // TODO : 데미지 판정
-                Vector2Int skillPos = player.GetFrontCellPosition(info.PosInfo.MoveDir);
-                Player target = _map.Find(skillPos);
-                if (target != null)
+                if (skillPacket.Info.SkillId == 1)
                 {
-                    Console.WriteLine("Hit Player!");
+                    // TODO : 데미지 판정
+                    Vector2Int skillPos = player.GetFrontCellPosition(info.PosInfo.MoveDir);
+                    Player target = _map.Find(skillPos);
+                    if (target != null)
+                    {
+                        Console.WriteLine("Hit Player!");
+                    }
                 }
-
+                else if (skillPacket.Info.SkillId == 2)
+                {
+                    // TODO : Arrow
+                }
             }
         }
 
