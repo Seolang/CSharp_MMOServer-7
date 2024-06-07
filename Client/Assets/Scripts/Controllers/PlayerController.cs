@@ -113,22 +113,15 @@ public class PlayerController : CreatureController
         {
             _coSkill = StartCoroutine("CoStartPunch");
         }
+        else if (skillId == 2)
+        {
+            _coSkill = StartCoroutine("CoStartShootArrow");
+        }
     }
 
     // 펀치 스킬 코루틴 메소드
     IEnumerator CoStartPunch()
     {
-        // 클라이언트에서는 더이상 능동적으로 데미지 계산을 하지 않음
-        //// 피격 판정
-        //GameObject go = Managers.Object.Find(GetFrontCellPosition());
-        //if (go != null)
-        //{
-        //    // 피격 상대의 데미지 메소드 실행
-        //    CreatureController cc = go.GetComponent<CreatureController>();
-        //    if (cc != null)
-        //        cc.OnDamaged();
-        //}
-
         // 대기 시간
         _rangeSkill = false;
         State = CreatureState.Skill;
@@ -141,16 +134,12 @@ public class PlayerController : CreatureController
     // 화살 스킬 코루틴 메소드
     IEnumerator CoStartShootArrow()
     {
-        // 화살 생성
-        GameObject go = Managers.Resource.Instantiate("Creature/Arrow");
-        ArrowController ac = go.GetComponent<ArrowController>();
-        ac.Dir = Dir; // 화살이 나아갈 방향 설정
-        ac.CellPos = CellPos; // 화살 초기 위치 설정
-
         // 대기 시간
         _rangeSkill = true;
+        State = CreatureState.Skill;
         yield return new WaitForSeconds(0.5f);
         State = CreatureState.Idle;
         _coSkill = null;
+        CheckUpdatedFlag();
     }
 }
