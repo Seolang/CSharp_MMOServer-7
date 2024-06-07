@@ -11,5 +11,7 @@ namespace Server.GameRepository.Object
         {
             ObjectType = GameObjectType.Projectile;
         }
+
+        public virtual void Update() { }
     }
 }

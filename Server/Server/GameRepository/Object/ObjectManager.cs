@@ -41,7 +41,7 @@ namespace Server.GameRepository.Object
             }
         }
 
-        public GameObjectType GetObjectTypeById(int id)
+        public static GameObjectType GetObjectTypeById(int id)
         {
             int type = (id >> 24) & 0x7F;
             return (GameObjectType)type;

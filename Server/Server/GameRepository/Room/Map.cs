@@ -60,7 +60,7 @@ namespace Server.GameRepository.Room
         public int SizeY { get { return MaxY - MinY + 1; } }
 
         bool[,] _collision; // 2차원 배열
-        Player[,] _players;
+        GameObject[,] _objects;
 
         // 갈 수 있는 좌표인지 결정하는 메소드
         public bool CanGo(Vector2Int cellPos, bool checkObjects = true)
@@ -72,10 +72,10 @@ namespace Server.GameRepository.Room
 
             int x = cellPos.x - MinX;
             int y = MaxY - cellPos.y; // Y값은 배열에서 뒤집혀있기 때문
-            return !_collision[y, x] && (!checkObjects || _players[y, x] == null); // true가 collision이 있는 위치
+            return !_collision[y, x] && (!checkObjects || _objects[y, x] == null); // true가 collision이 있는 위치
         }
 
-        public Player Find(Vector2Int cellPos)
+        public GameObject Find(Vector2Int cellPos)
         {
             if (cellPos.x < MinX || cellPos.x > MaxX)
                 return null;
@@ -85,12 +85,12 @@ namespace Server.GameRepository.Room
             int x = cellPos.x - MinX;
             int y = MaxY - cellPos.y;
 
-            return _players[y, x];
+            return _objects[y, x];
         }
 
-        public bool ApplyMove(Player player, Vector2Int dest)
+        public bool ApplyMove(GameObject gameObject, Vector2Int dest)
         {
-            PositionInfo posInfo = player.Info.PosInfo;
+            PositionInfo posInfo = gameObject.PosInfo;
             if (posInfo.PosX < MinX || posInfo.PosX > MaxX)
                 return false;
             if (posInfo.PosY < MinY || posInfo.PosY > MaxY)
@@ -103,19 +103,38 @@ namespace Server.GameRepository.Room
             {
                 int x = posInfo.PosX - MinX;
                 int y = MaxY - posInfo.PosY;
-                if (_players[y, x] == player)
-                    _players[y, x] = null;
+                if (_objects[y, x] == gameObject)
+                    _objects[y, x] = null;
             }
 
             {
                 int x = dest.x - MinX;
                 int y = MaxY - dest.y;
-                _players[y, x] = player;
+                _objects[y, x] = gameObject;
             }
 
             // 플레이어 위치 변경
             posInfo.PosX = dest.x;
             posInfo.PosY = dest.y;
+            return true;
+        }
+
+        public bool ApplyLeave(GameObject gameObject)
+        {
+            PositionInfo posInfo = gameObject.PosInfo;
+            if (posInfo.PosX < MinX || posInfo.PosX > MaxX)
+                return false;
+            if (posInfo.PosY < MinY || posInfo.PosY > MaxY)
+                return false;
+
+            // 플레이어 배열에 위치 수정
+            {
+                int x = posInfo.PosX - MinX;
+                int y = MaxY - posInfo.PosY;
+                if (_objects[y, x] == gameObject)
+                    _objects[y, x] = null;
+            }
+
             return true;
         }
 
@@ -137,7 +156,7 @@ namespace Server.GameRepository.Room
             int xCount = MaxX - MinX + 1;
             int yCount = MaxY - MinY + 1;
             _collision = new bool[yCount, xCount];
-            _players = new Player[yCount, xCount];
+            _objects = new GameObject[yCount, xCount];
 
             for (int y = 0; y < yCount; y++)
             {
