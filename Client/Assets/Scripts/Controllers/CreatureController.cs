@@ -7,9 +7,27 @@ public class CreatureController : MonoBehaviour
     // 개체 ID
     public int Id { get; set; }
 
-    // 속도
-    [SerializeField]
-    public float _speed = 5.0f;
+    StatInfo _stat = new StatInfo();
+
+    public StatInfo Stat
+    {
+        get { return _stat; }
+        set
+        {
+            if (_stat.Equals(value))
+                return;
+
+            _stat.Hp = value.Hp;
+            _stat.MaxHp = value.MaxHp;
+            _stat.Speed = value.Speed;
+        }
+    }
+
+    public float Speed
+    {
+        get { return Stat.Speed; }
+        set { Stat.Speed = value; }
+    }
 
     protected bool _updated = false;
 
@@ -270,7 +288,7 @@ public class CreatureController : MonoBehaviour
         float dist = moveDir.magnitude; // 벡터 거리
 
         // 다음 이동 지점 탐색
-        if (dist < _speed * Time.deltaTime)
+        if (dist < Speed * Time.deltaTime)
         {
             transform.position = destPos;
             MoveToNextPosition();
@@ -278,7 +296,7 @@ public class CreatureController : MonoBehaviour
         else // 스프라이트 이동
         {
             // normalized : 단위벡터
-            transform.position += moveDir.normalized * _speed * Time.deltaTime;
+            transform.position += moveDir.normalized * Speed * Time.deltaTime;
         }
     }
 

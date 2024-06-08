@@ -10,19 +10,24 @@ namespace Server.GameRepository.Object
     {
         public GameObjectType ObjectType { get; protected set; } = GameObjectType.None;
         public GameRoom Room { get; set; }
-        public ObjectInfo Info { get; set; }
-        public PositionInfo PosInfo { get; private set; }
+        public ObjectInfo Info { get; set; } = new ObjectInfo();
+        public PositionInfo PosInfo { get; private set; } = new PositionInfo();
+        public StatInfo Stat { get; private set; } = new StatInfo();
         public int Id
         {
             get { return Info.ObjectId; }
             set { Info.ObjectId = value; }
         }
+        public float Speed
+        {
+            get { return Stat.Speed; }
+            set { Stat.Speed = value; }
+        }
 
         public GameObject()
         {
-            Info = new ObjectInfo();
-            PosInfo = new PositionInfo();
             Info.PosInfo = PosInfo;
+            Info.StatInfo = Stat;
         }
 
         public Vector2Int CellPos
@@ -65,6 +70,11 @@ namespace Server.GameRepository.Object
             }
 
             return cellPos;
+        }
+
+        public virtual void OnDamaged(GameObject attacker, int damage)
+        {
+
         }
 
     }

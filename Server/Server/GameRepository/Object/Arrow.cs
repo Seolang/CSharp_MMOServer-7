@@ -41,6 +41,7 @@ namespace Server.GameRepository.Object
                 if (target != null)
                 {
                     // TODO : 피격 판정
+                    target.OnDamaged(Owner, Data.damage);
                 }
 
                 Room.LeaveGame(Id);
