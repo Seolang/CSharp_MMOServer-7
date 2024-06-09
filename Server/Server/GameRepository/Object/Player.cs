@@ -16,7 +16,12 @@ namespace Server.GameRepository.Object
 
         public override void OnDamaged(GameObject attacker, int damage)
         {
-            Console.WriteLine($"TODO : damage {damage}");
+            base.OnDamaged(attacker, damage);
+        }
+
+        public override void OnDead(GameObject attacker)
+        {
+            base.OnDead(attacker);
         }
     }
 }
